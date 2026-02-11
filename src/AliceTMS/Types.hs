@@ -52,18 +52,18 @@ data BookShipmentRequest = BookShipmentRequest
   , reference1             :: Maybe Text
   , reference2             :: Maybe Text
   , reference3             :: Maybe Text
-  , pickupDate             :: Maybe Day
-  , deliveryDate           :: Maybe Day
+  , pickupDate             :: Day
+  , deliveryDate           :: Day
   , pickupTimeStart        :: Maybe TimeOfDay
   , pickupTimeEnd          :: Maybe TimeOfDay
   , deliveryTimeStart      :: Maybe TimeOfDay
   , deliveryTimeEnd        :: Maybe TimeOfDay
   , services               :: Maybe [Text]
-  , senderAddress          :: Maybe CommandAddress
-  , recipientAddress       :: Maybe CommandAddress
-  , fullExchangePallets    :: Maybe Int
-  , halfExchangePallets    :: Maybe Int
-  , quarterExchangePallets :: Maybe Int
+  , senderAddress          :: CommandAddress
+  , recipientAddress       :: CommandAddress
+  , fullExchangePallets    :: Int
+  , halfExchangePallets    :: Int
+  , quarterExchangePallets :: Int
   , ready                  :: Maybe Bool
   } deriving (Show, Generic)
 
@@ -99,7 +99,7 @@ data CommandColli = CommandColli
   , colliWidth          :: Maybe Double
   , colliVolume         :: Maybe Double
   , colliLoadMeter      :: Maybe Double
-  , colliWeight         :: Maybe Double
+  , colliWeight         :: Double
   , colliDangerousGoods :: Maybe [DangerousGoods]
   } deriving (Show, Generic)
 
@@ -110,20 +110,20 @@ instance FromJSON CommandColli where
 
 -- | Fields prefixed with @dg@ to avoid the reserved word @class@.
 data DangerousGoods = DangerousGoods
-  { dgName              :: Text
-  , dgUnNumber          :: Text
+  { dgName              :: Maybe Text
+  , dgUnNumber          :: Maybe Text
   , dgTunnelCode        :: Maybe Text
   , dgClass             :: Maybe Text
-  , dgWaybillString     :: Text
+  , dgWaybillString     :: Maybe Text
   , dgPackageGroup      :: Maybe Text
   , dgTransportCategory :: Maybe Text
   , dgImdg              :: Maybe Text
-  , dgLiquid            :: Maybe Bool
-  , dgEnvironmental     :: Maybe Bool
-  , dgNetWeightKg       :: Maybe Double
-  , dgGrossWeightKg     :: Maybe Double
-  , dgVolumeM3          :: Maybe Double
-  , dgColliQuantity     :: Maybe Int
+  , dgLiquid            :: Bool
+  , dgEnvironmental     :: Bool
+  , dgNetWeightKg       :: Double
+  , dgGrossWeightKg     :: Double
+  , dgVolumeM3          :: Double
+  , dgColliQuantity     :: Int
   , dgPackaging         :: Maybe Text
   , dgPoint             :: Maybe Int
   } deriving (Show, Generic)
