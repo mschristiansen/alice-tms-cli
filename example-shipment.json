@@ -1,0 +1,42 @@
+{
+  "pickupDate": "2025-06-15",
+  "deliveryDate": "2025-06-16",
+  "pickupTimeStart": "08:00:00",
+  "pickupTimeEnd": "16:00:00",
+  "deliveryTimeStart": "08:00:00",
+  "deliveryTimeEnd": "12:00:00",
+  "reference1": "ORDER-123",
+  "note": "Fragile electronics, handle with care",
+  "senderAddress": {
+    "name": "Warehouse A",
+    "street": "Industrivej 10",
+    "zipCode": "8000",
+    "city": "Aarhus",
+    "countryCode": "DK",
+    "contactPerson": "Hans Jensen",
+    "contactEmail": "hans@example.com",
+    "contactPhone": "+4512345678"
+  },
+  "recipientAddress": {
+    "name": "Customer B",
+    "street": "Hovedgaden 5",
+    "zipCode": "2100",
+    "city": "Copenhagen",
+    "countryCode": "DK",
+    "contactPerson": "Maria Nielsen",
+    "contactEmail": "maria@example.com",
+    "contactPhone": "+4587654321"
+  },
+  "collis": [
+    {
+      "type": "package",
+      "description": "Electronics box",
+      "weight": 12.5,
+      "length": 60,
+      "width": 40,
+      "height": 30,
+      "barcodes": ["PKG001"]
+    }
+  ],
+  "ready": true
+}
