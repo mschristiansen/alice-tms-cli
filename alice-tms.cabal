@@ -34,4 +34,6 @@ executable alice-tms
   main-is:         Main.hs
   build-depends:
     , alice-tms
+    , dotenv       >= 0.11
+    , directory    >= 1.3
   ghc-options:     -threaded

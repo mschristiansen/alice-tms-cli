@@ -9,7 +9,7 @@ import qualified Data.Text as T
 import Options.Applicative
 
 data Opts = Opts
-  { optBaseUrl :: String
+  { optBaseUrl :: Maybe String
   , optCommand :: Command
   } deriving (Show)
 
@@ -33,13 +33,11 @@ parserInfo = info (optsP <**> helper)
 
 optsP :: Parser Opts
 optsP = Opts
-  <$> strOption
+  <$> optional (strOption
       (  long "base-url"
       <> metavar "URL"
-      <> value "https://api.alicetms.net"
-      <> showDefault
-      <> help "API base URL"
-      )
+      <> help "API base URL (default: https://api.alicetms.net, or ALICE_TMS_BASE_URL env var)"
+      ))
   <*> subparser
       (  command "book"   (info (bookP   <**> helper) (progDesc "Book a shipment (V2)"))
       <> command "book1"  (info (bookV1P <**> helper) (progDesc "Book a shipment (V1)"))
