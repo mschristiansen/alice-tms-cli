@@ -2,7 +2,8 @@ module Main where
 
 import AliceTMS.CLI (Command(..), Opts(..), runCLI)
 import AliceTMS.Client (bookShipment, bookShipmentV1, checkStatus, getEvents, getLabel, newManager)
-import AliceTMS.Types (Config(..))
+import AliceTMS.Error (AliceTMSError(..), formatError)
+import AliceTMS.Types (BookShipmentRequest, BookShipmentResponse, Config(Config))
 import AliceTMS.Validation (validateColliDimensions)
 
 import Configuration.Dotenv (defaultConfig, loadFile)
@@ -12,6 +13,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LBS8
 import qualified Data.Text as T
+import Network.HTTP.Client (Manager)
 import System.Directory (doesFileExist)
 import System.Environment (lookupEnv)
 import System.Exit (exitFailure)
@@ -29,7 +31,7 @@ main = do
 
   mKey <- lookupEnv "ALICE_TMS_API_KEY"
   key <- case mKey of
-    Nothing -> exitErr "ALICE_TMS_API_KEY environment variable not set"
+    Nothing -> exitErr (formatError (ConfigError "ALICE_TMS_API_KEY environment variable not set"))
     Just k  -> pure (T.pack k)
 
   baseUrl <- case optBaseUrl opts of
@@ -40,28 +42,29 @@ main = do
   mgr <- newManager
 
   case optCommand opts of
-    Book path -> do
-      raw <- if path == "-" then LBS.getContents else LBS.readFile path
-      case eitherDecode raw of
-        Left err  -> exitErr $ "Invalid JSON: " <> err
-        Right req -> do
-          mapM_ (exitErr . ("Colli dimension out of range: " <>)) (validateColliDimensions req)
-          bookShipment mgr cfg req >>= printResult
+    Book   path -> handleBookCommand mgr cfg bookShipment   path
+    BookV1 path -> handleBookCommand mgr cfg bookShipmentV1 path
+    Status tid  -> checkStatus mgr cfg tid  >>= printResult
+    Label  sid  -> getLabel mgr cfg sid     >>= printResult
+    Events sid  -> getEvents mgr cfg sid    >>= printResult
 
-    BookV1 path -> do
-      raw <- if path == "-" then LBS.getContents else LBS.readFile path
-      case eitherDecode raw of
-        Left err  -> exitErr $ "Invalid JSON: " <> err
-        Right req -> do
-          mapM_ (exitErr . ("Colli dimension out of range: " <>)) (validateColliDimensions req)
-          bookShipmentV1 mgr cfg req >>= printResult
+readInput :: FilePath -> IO LBS.ByteString
+readInput "-"  = LBS.getContents
+readInput path = LBS.readFile path
 
-    Status tid -> checkStatus mgr cfg tid >>= printResult
-    Label  sid -> getLabel mgr cfg sid    >>= printResult
-    Events sid -> getEvents mgr cfg sid   >>= printResult
+handleBookCommand :: Manager -> Config
+                  -> (Manager -> Config -> BookShipmentRequest -> IO (Either AliceTMSError BookShipmentResponse))
+                  -> FilePath -> IO ()
+handleBookCommand mgr cfg bookFn path = do
+  raw <- readInput path
+  case eitherDecode raw of
+    Left err  -> exitErr (formatError (JsonDecodeError err))
+    Right req -> case validateColliDimensions req of
+      []   -> bookFn mgr cfg req >>= printResult
+      errs -> exitErr (formatError (ValidationError errs))
 
-printResult :: ToJSON a => Either String a -> IO ()
-printResult (Left err)  = exitErr err
+printResult :: ToJSON a => Either AliceTMSError a -> IO ()
+printResult (Left err)  = exitErr (formatError err)
 printResult (Right val) = LBS8.putStrLn (encode val)
 
 exitErr :: String -> IO a

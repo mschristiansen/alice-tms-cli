@@ -4,7 +4,8 @@ module AliceTMS.CLI
   , runCLI
   ) where
 
-import Data.Text (Text)
+import AliceTMS.Types (TrackingNumber(..), ShipmentId(..))
+
 import qualified Data.Text as T
 import Options.Applicative
 
@@ -14,11 +15,11 @@ data Opts = Opts
   } deriving (Show)
 
 data Command
-  = Book FilePath    -- ^ JSON file path, or @-@ for stdin (V2)
-  | BookV1 FilePath  -- ^ JSON file path, or @-@ for stdin (V1)
-  | Status Text      -- ^ tracking number (UUID)
-  | Label Text       -- ^ shipment ID (UUID)
-  | Events Text      -- ^ shipment ID (UUID)
+  = Book FilePath          -- ^ JSON file path, or @-@ for stdin (V2)
+  | BookV1 FilePath        -- ^ JSON file path, or @-@ for stdin (V1)
+  | Status TrackingNumber  -- ^ tracking number (UUID)
+  | Label ShipmentId       -- ^ shipment ID (UUID)
+  | Events ShipmentId      -- ^ shipment ID (UUID)
   deriving (Show)
 
 runCLI :: IO Opts
@@ -61,7 +62,7 @@ bookV1P = BookV1 <$> strArgument
   )
 
 statusP :: Parser Command
-statusP = Status . T.pack <$> strOption
+statusP = Status . TrackingNumber . T.pack <$> strOption
   (  long "tracking-number"
   <> short 't'
   <> metavar "UUID"
@@ -69,7 +70,7 @@ statusP = Status . T.pack <$> strOption
   )
 
 labelP :: Parser Command
-labelP = Label . T.pack <$> strOption
+labelP = Label . ShipmentId . T.pack <$> strOption
   (  long "shipment-id"
   <> short 's'
   <> metavar "UUID"
@@ -77,7 +78,7 @@ labelP = Label . T.pack <$> strOption
   )
 
 eventsP :: Parser Command
-eventsP = Events . T.pack <$> strOption
+eventsP = Events . ShipmentId . T.pack <$> strOption
   (  long "shipment-id"
   <> short 's'
   <> metavar "UUID"

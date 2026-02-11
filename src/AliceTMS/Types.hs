@@ -3,6 +3,9 @@
 
 module AliceTMS.Types
   ( Config(..)
+    -- * Newtypes
+  , TrackingNumber(..)
+  , ShipmentId(..)
     -- * V2 Book Shipment
   , BookShipmentRequest(..)
   , CommandAddress(..)
@@ -27,6 +30,12 @@ data Config = Config
   { baseUrl :: String
   , apiKey  :: Text
   } deriving (Show)
+
+newtype TrackingNumber = TrackingNumber { unTrackingNumber :: Text }
+  deriving (Show, Eq)
+
+newtype ShipmentId = ShipmentId { unShipmentId :: Text }
+  deriving (Show, Eq)
 
 -- | JSON options that omit Nothing fields.
 jsonOpts :: Options
