@@ -1,57 +1,19 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module AliceTMS.Types
-  ( Config(..)
-    -- * Newtypes
-  , TrackingNumber(..)
-  , ShipmentId(..)
-    -- * V2 Book Shipment
-  , BookShipmentRequest(..)
+module AliceTMS.Types.Request
+  ( BookShipmentRequest(..)
   , CommandAddress(..)
   , CommandColli(..)
   , DangerousGoods(..)
-  , BookShipmentResponse(..)
-    -- * Queries
-  , CheckStatusResponse(..)
-  , GetLabelResponse(..)
-  , GetEventsResponse(..)
-  , Scan(..)
   ) where
 
-import Data.Aeson
-import Data.Char (toLower)
+import AliceTMS.Internal.JSON (jsonOpts, prefixOpts)
+
+import Data.Aeson (FromJSON(..), ToJSON(..), genericParseJSON, genericToJSON)
 import Data.Text (Text)
-import Data.Time (Day, TimeOfDay, UTCTime)
+import Data.Time (Day, TimeOfDay)
 import GHC.Generics (Generic)
-
--- | API connection configuration.
-data Config = Config
-  { baseUrl :: String
-  , apiKey  :: Text
-  } deriving (Show)
-
-newtype TrackingNumber = TrackingNumber { unTrackingNumber :: Text }
-  deriving (Show, Eq)
-
-newtype ShipmentId = ShipmentId { unShipmentId :: Text }
-  deriving (Show, Eq)
-
--- | JSON options that omit Nothing fields.
-jsonOpts :: Options
-jsonOpts = defaultOptions { omitNothingFields = True }
-
--- | JSON options that strip a prefix and lower-case the remainder.
-prefixOpts :: Int -> Options
-prefixOpts n = jsonOpts
-  { fieldLabelModifier = \s -> case drop n s of
-      []     -> s
-      (c:cs) -> toLower c : cs
-  }
-
--- --------------------------------------------------------------------
--- V2 Book Shipment
--- --------------------------------------------------------------------
 
 data BookShipmentRequest = BookShipmentRequest
   { waybillNo              :: Maybe Text
@@ -140,67 +102,3 @@ instance ToJSON DangerousGoods where
   toJSON = genericToJSON (prefixOpts 2)
 instance FromJSON DangerousGoods where
   parseJSON = genericParseJSON (prefixOpts 2)
-
--- --------------------------------------------------------------------
--- Responses
--- --------------------------------------------------------------------
-
-data BookShipmentResponse = BookShipmentResponse
-  { trackingNumber :: Maybe Text
-  , shipmentId     :: Maybe Text
-  , labelData      :: Maybe Text
-  , wayBillNo      :: Maybe Text
-  , trackAndTrace  :: Maybe Text
-  } deriving (Show, Generic)
-
-instance ToJSON BookShipmentResponse where
-  toJSON = genericToJSON jsonOpts
-instance FromJSON BookShipmentResponse where
-  parseJSON = genericParseJSON jsonOpts
-
-data CheckStatusResponse = CheckStatusResponse
-  { status            :: Maybe Text
-  , startedProcessing :: Maybe UTCTime
-  , failed            :: Maybe UTCTime
-  , completed         :: Maybe UTCTime
-  } deriving (Show, Generic)
-
-instance ToJSON CheckStatusResponse where
-  toJSON = genericToJSON jsonOpts
-instance FromJSON CheckStatusResponse where
-  parseJSON = genericParseJSON jsonOpts
-
-newtype GetLabelResponse = GetLabelResponse
-  { labelUri :: Maybe Text
-  } deriving (Show, Generic)
-
-instance ToJSON GetLabelResponse where
-  toJSON = genericToJSON jsonOpts
-instance FromJSON GetLabelResponse where
-  parseJSON = genericParseJSON jsonOpts
-
-data GetEventsResponse = GetEventsResponse
-  { waybillNo     :: Maybe Text
-  , trackAndTrace :: Maybe Text
-  , scans         :: Maybe [Scan]
-  } deriving (Show, Generic)
-
-instance ToJSON GetEventsResponse where
-  toJSON = genericToJSON jsonOpts
-instance FromJSON GetEventsResponse where
-  parseJSON = genericParseJSON jsonOpts
-
-data Scan = Scan
-  { scanDateTime :: Maybe UTCTime
-  , scanType     :: Maybe Text
-  , barcode      :: Maybe Text
-  , podText      :: Maybe Text
-  , podImage     :: Maybe Text
-  , longitude    :: Maybe Double
-  , latitude     :: Maybe Double
-  } deriving (Show, Generic)
-
-instance ToJSON Scan where
-  toJSON = genericToJSON jsonOpts
-instance FromJSON Scan where
-  parseJSON = genericParseJSON jsonOpts

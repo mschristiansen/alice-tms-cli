@@ -22,11 +22,16 @@ library
   import:          common-deps
   hs-source-dirs:  src
   exposed-modules:
-    AliceTMS.Types
-    AliceTMS.Client
+    AliceTMS.Booking
     AliceTMS.CLI
+    AliceTMS.Client
+    AliceTMS.Config
     AliceTMS.Error
+    AliceTMS.Types.Request
+    AliceTMS.Types.Response
     AliceTMS.Validation
+  other-modules:
+    AliceTMS.Internal.JSON
   build-depends:
     , optparse-applicative >= 0.17
 

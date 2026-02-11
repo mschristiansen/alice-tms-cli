@@ -4,7 +4,7 @@ module AliceTMS.CLI
   , runCLI
   ) where
 
-import AliceTMS.Types (TrackingNumber(..), ShipmentId(..))
+import AliceTMS.Config (TrackingNumber(..), ShipmentId(..))
 
 import qualified Data.Text as T
 import Options.Applicative

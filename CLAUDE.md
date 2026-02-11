@@ -33,16 +33,28 @@ alice-tms events -s <shipment-uuid>    # get tracking events
 ## Architecture
 
 ```
-app/Main.hs              -- entry point: CLI parsing, env var handling, dispatch
+app/Main.hs                    -- entry point: CLI parsing, env var handling, dispatch
 src/AliceTMS/
-  CLI.hs                  -- optparse-applicative command definitions
-  Types.hs                -- all API request/response types with Aeson instances
-  Client.hs               -- HTTP client functions (one per API endpoint)
+  Booking.hs                    -- pure decode+validate pipeline for book commands
+  CLI.hs                        -- optparse-applicative command definitions
+  Client.hs                     -- HTTP client functions (one per API endpoint)
+  Config.hs                     -- Config, ApiKey, BaseUrl, TrackingNumber, ShipmentId
+  Error.hs                      -- AliceTMSError ADT and formatError
+  Validation.hs                 -- pure colli dimension validation
+  Types/
+    Request.hs                  -- BookShipmentRequest, CommandAddress, CommandColli, DangerousGoods
+    Response.hs                 -- BookShipmentResponse, CheckStatusResponse, GetLabelResponse, etc.
+  Internal/
+    JSON.hs                     -- jsonOpts, prefixOpts (not exported from library)
 ```
 
-**Types.hs naming conventions**: `CommandColli` fields are prefixed `colli` (e.g. `colliType` → JSON `"type"`) and `DangerousGoods` fields are prefixed `dg` (e.g. `dgClass` → JSON `"class"`) to avoid Haskell reserved words. Prefix stripping is handled by `prefixOpts` with generic Aeson derivation. All other types use natural field names with `DuplicateRecordFields`.
+**Request type naming conventions**: `CommandColli` fields are prefixed `colli` (e.g. `colliType` → JSON `"type"`) and `DangerousGoods` fields are prefixed `dg` (e.g. `dgClass` → JSON `"class"`) to avoid Haskell reserved words. Prefix stripping is handled by `prefixOpts` in `Internal.JSON` with generic Aeson derivation. All other types use natural field names with `DuplicateRecordFields`.
 
-**Client.hs**: API key is passed as query parameter `apiKey` on all requests. GET endpoints use `mkGetRequest` helper; POST uses inline construction. All client functions return `Either String a`.
+**Config.hs**: `ApiKey` and `BaseUrl` are newtypes wrapping `Text` and `String` respectively. Use `unApiKey`/`unBaseUrl` to unwrap.
+
+**Client.hs**: API key is passed as query parameter `apiKey` on all requests. GET endpoints use `mkGetRequest` helper; POST uses `mkPostRequest`. All client functions return `Either AliceTMSError a`.
+
+**Booking.hs**: Pure pipeline `decodeAndValidateRequest :: ByteString -> Either AliceTMSError BookShipmentRequest` that decodes JSON then validates colli dimensions. Used by Main.hs for both `book` and `book1` commands.
 
 ## API Endpoints Covered
 

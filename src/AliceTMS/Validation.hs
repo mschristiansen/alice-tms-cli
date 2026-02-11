@@ -2,7 +2,7 @@ module AliceTMS.Validation
   ( validateColliDimensions
   ) where
 
-import AliceTMS.Types (BookShipmentRequest(..), CommandColli(..))
+import AliceTMS.Types.Request (BookShipmentRequest(..), CommandColli(..))
 import Data.Maybe (catMaybes, fromMaybe)
 
 -- | Max colli dimensions in meters (standard European trailer).

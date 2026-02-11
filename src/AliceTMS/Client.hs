@@ -9,8 +9,10 @@ module AliceTMS.Client
   , newManager
   ) where
 
+import AliceTMS.Config
 import AliceTMS.Error
-import AliceTMS.Types
+import AliceTMS.Types.Request (BookShipmentRequest)
+import AliceTMS.Types.Response (BookShipmentResponse, CheckStatusResponse, GetLabelResponse, GetEventsResponse)
 
 import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
 import qualified Data.ByteString as BS
@@ -27,11 +29,11 @@ newManager :: IO Manager
 newManager = HC.newManager tlsManagerSettings
 
 mkApiParams :: Config -> QueryParams -> QueryParams
-mkApiParams cfg extra = ("apiKey", Just (TE.encodeUtf8 (apiKey cfg))) : extra
+mkApiParams cfg extra = ("apiKey", Just (TE.encodeUtf8 (unApiKey (apiKey cfg)))) : extra
 
 mkGetRequest :: Config -> String -> QueryParams -> IO Request
 mkGetRequest cfg urlPath extra = do
-  req <- parseRequest (baseUrl cfg <> urlPath)
+  req <- parseRequest (unBaseUrl (baseUrl cfg) <> urlPath)
   pure $ setQueryString (mkApiParams cfg extra) req
 
 doRequest :: FromJSON a => Manager -> Request -> IO (Either AliceTMSError a)
@@ -47,7 +49,7 @@ doRequest mgr req = do
 
 mkPostRequest :: ToJSON body => Config -> String -> body -> IO Request
 mkPostRequest cfg urlPath body = do
-  initReq <- parseRequest (baseUrl cfg <> urlPath)
+  initReq <- parseRequest (unBaseUrl (baseUrl cfg) <> urlPath)
   pure $ setQueryString (mkApiParams cfg []) $ initReq
     { method = "POST"
     , requestBody = RequestBodyLBS (encode body)

@@ -1,15 +1,16 @@
 module Main where
 
+import AliceTMS.Booking (decodeAndValidateRequest)
 import AliceTMS.CLI (Command(..), Opts(..), runCLI)
 import AliceTMS.Client (bookShipment, bookShipmentV1, checkStatus, getEvents, getLabel, newManager)
+import AliceTMS.Config (ApiKey(..), BaseUrl(..), Config(..), defaultBaseUrl)
 import AliceTMS.Error (AliceTMSError(..), formatError)
-import AliceTMS.Types (BookShipmentRequest, BookShipmentResponse, Config(Config))
-import AliceTMS.Validation (validateColliDimensions)
+import AliceTMS.Types.Request (BookShipmentRequest)
+import AliceTMS.Types.Response (BookShipmentResponse)
 
 import Configuration.Dotenv (defaultConfig, loadFile)
 import Control.Monad (void, when)
-import Data.Aeson (ToJSON, eitherDecode, encode)
-import Data.Maybe (fromMaybe)
+import Data.Aeson (ToJSON, encode)
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LBS8
 import qualified Data.Text as T
@@ -18,9 +19,6 @@ import System.Directory (doesFileExist)
 import System.Environment (lookupEnv)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
-
-defaultBaseUrl :: String
-defaultBaseUrl = "https://api.alicetms.net"
 
 main :: IO ()
 main = do
@@ -34,11 +32,11 @@ main = do
     Nothing -> exitErr (formatError (ConfigError "ALICE_TMS_API_KEY environment variable not set"))
     Just k  -> pure (T.pack k)
 
-  baseUrl <- case optBaseUrl opts of
-    Just url -> pure url
-    Nothing  -> fromMaybe defaultBaseUrl <$> lookupEnv "ALICE_TMS_BASE_URL"
+  base <- case optBaseUrl opts of
+    Just url -> pure (BaseUrl url)
+    Nothing  -> maybe defaultBaseUrl BaseUrl <$> lookupEnv "ALICE_TMS_BASE_URL"
 
-  let cfg = Config baseUrl key
+  let cfg = Config base (ApiKey key)
   mgr <- newManager
 
   case optCommand opts of
@@ -57,11 +55,9 @@ handleBookCommand :: Manager -> Config
                   -> FilePath -> IO ()
 handleBookCommand mgr cfg bookFn path = do
   raw <- readInput path
-  case eitherDecode raw of
-    Left err  -> exitErr (formatError (JsonDecodeError err))
-    Right req -> case validateColliDimensions req of
-      []   -> bookFn mgr cfg req >>= printResult
-      errs -> exitErr (formatError (ValidationError errs))
+  case decodeAndValidateRequest raw of
+    Left err  -> exitErr (formatError err)
+    Right req -> bookFn mgr cfg req >>= printResult
 
 printResult :: ToJSON a => Either AliceTMSError a -> IO ()
 printResult (Left err)  = exitErr (formatError err)
