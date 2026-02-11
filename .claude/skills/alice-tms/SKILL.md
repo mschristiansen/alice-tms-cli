@@ -22,7 +22,7 @@ cabal install --overwrite-policy=always
 
 ## Commands
 
-### Book a shipment
+### Book a shipment (V2)
 
 ```bash
 # From a JSON file
@@ -32,7 +32,16 @@ alice-tms book shipment.json
 echo '{ ... }' | alice-tms book
 ```
 
-The JSON body is a `BookShipmentRequest`. All fields are optional. Example:
+### Book a shipment (V1)
+
+```bash
+alice-tms book1 shipment.json
+echo '{ ... }' | alice-tms book1
+```
+
+Both `book` (V2) and `book1` (V1) accept the same JSON body. V1 has stricter required fields (collis, dates, addresses). V2 returns additional fields (labelData, wayBillNo, trackAndTrace) in the response.
+
+The JSON body is a `BookShipmentRequest`. Example:
 
 ```json
 {
