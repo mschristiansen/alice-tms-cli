@@ -2,6 +2,7 @@
 
 module AliceTMS.Client
   ( bookShipment
+  , bookShipmentV1
   , checkStatus
   , getLabel
   , getEvents
@@ -43,6 +44,18 @@ doRequest mgr req = do
 bookShipment :: Manager -> Config -> BookShipmentRequest -> IO (Either String BookShipmentResponse)
 bookShipment mgr cfg body = do
   initReq <- parseRequest (baseUrl cfg <> "/bookings/v2/bookShipment")
+  let params = [("apiKey", Just (TE.encodeUtf8 (apiKey cfg)))]
+      req = setQueryString params $ initReq
+        { method = "POST"
+        , requestBody = RequestBodyLBS (encode body)
+        , requestHeaders = [("Content-Type", "application/json")]
+        }
+  doRequest mgr req
+
+-- | Book a shipment (V1).
+bookShipmentV1 :: Manager -> Config -> BookShipmentRequest -> IO (Either String BookShipmentResponse)
+bookShipmentV1 mgr cfg body = do
+  initReq <- parseRequest (baseUrl cfg <> "/bookings/v1/bookShipment")
   let params = [("apiKey", Just (TE.encodeUtf8 (apiKey cfg)))]
       req = setQueryString params $ initReq
         { method = "POST"

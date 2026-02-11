@@ -20,7 +20,9 @@ Requires `ALICE_TMS_API_KEY` environment variable. Accepts `--base-url` to overr
 
 ```bash
 alice-tms book shipment.json           # book from file (V2 endpoint)
-alice-tms book                         # book from stdin
+alice-tms book                         # book from stdin (V2)
+alice-tms book1 shipment.json          # book from file (V1 endpoint)
+alice-tms book1                        # book from stdin (V1)
 alice-tms status -t <tracking-uuid>    # check booking status
 alice-tms label -s <shipment-uuid>     # get label URL
 alice-tms events -s <shipment-uuid>    # get tracking events
@@ -45,6 +47,7 @@ src/AliceTMS/
 | CLI command | HTTP | Path |
 |-------------|------|------|
 | `book`      | POST | `/bookings/v2/bookShipment` |
+| `book1`     | POST | `/bookings/v1/bookShipment` |
 | `status`    | GET  | `/bookings/v1/status` |
 | `label`     | GET  | `/bookings/v1/label` |
 | `events`    | GET  | `/bookings/v1/Events` |

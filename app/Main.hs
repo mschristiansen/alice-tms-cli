@@ -1,7 +1,7 @@
 module Main where
 
 import AliceTMS.CLI (Command(..), Opts(..), runCLI)
-import AliceTMS.Client (bookShipment, checkStatus, getEvents, getLabel, newManager)
+import AliceTMS.Client (bookShipment, bookShipmentV1, checkStatus, getEvents, getLabel, newManager)
 import AliceTMS.Types (Config(..))
 
 import Data.Aeson (ToJSON, eitherDecode, encode)
@@ -30,6 +30,12 @@ main = do
       case eitherDecode raw of
         Left err  -> exitErr $ "Invalid JSON: " <> err
         Right req -> bookShipment mgr cfg req >>= printResult
+
+    BookV1 path -> do
+      raw <- if path == "-" then LBS.getContents else LBS.readFile path
+      case eitherDecode raw of
+        Left err  -> exitErr $ "Invalid JSON: " <> err
+        Right req -> bookShipmentV1 mgr cfg req >>= printResult
 
     Status tid -> checkStatus mgr cfg tid >>= printResult
     Label  sid -> getLabel mgr cfg sid    >>= printResult

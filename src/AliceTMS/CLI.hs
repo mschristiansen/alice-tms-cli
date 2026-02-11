@@ -14,7 +14,8 @@ data Opts = Opts
   } deriving (Show)
 
 data Command
-  = Book FilePath    -- ^ JSON file path, or @-@ for stdin
+  = Book FilePath    -- ^ JSON file path, or @-@ for stdin (V2)
+  | BookV1 FilePath  -- ^ JSON file path, or @-@ for stdin (V1)
   | Status Text      -- ^ tracking number (UUID)
   | Label Text       -- ^ shipment ID (UUID)
   | Events Text      -- ^ shipment ID (UUID)
@@ -41,6 +42,7 @@ optsP = Opts
       )
   <*> subparser
       (  command "book"   (info (bookP   <**> helper) (progDesc "Book a shipment (V2)"))
+      <> command "book1"  (info (bookV1P <**> helper) (progDesc "Book a shipment (V1)"))
       <> command "status" (info (statusP <**> helper) (progDesc "Check booking status"))
       <> command "label"  (info (labelP  <**> helper) (progDesc "Get shipment label URL"))
       <> command "events" (info (eventsP <**> helper) (progDesc "Get shipment tracking events"))
@@ -48,6 +50,13 @@ optsP = Opts
 
 bookP :: Parser Command
 bookP = Book <$> strArgument
+  (  metavar "FILE"
+  <> value "-"
+  <> help "JSON file with shipment data (- for stdin)"
+  )
+
+bookV1P :: Parser Command
+bookV1P = BookV1 <$> strArgument
   (  metavar "FILE"
   <> value "-"
   <> help "JSON file with shipment data (- for stdin)"

@@ -14,10 +14,10 @@ You are operating the `alice-tms` CLI — a Haskell tool for the Alice TMS trans
 
 The environment variable `ALICE_TMS_API_KEY` must be set. If a command fails with "ALICE_TMS_API_KEY environment variable not set", ask the user to set it.
 
-Build first if needed:
+The `alice-tms` executable must be installed (via `cabal install`). If the command is not found, run:
 
 ```bash
-cabal run alice-tms -- --help
+cabal install --overwrite-policy=always
 ```
 
 ## Commands
@@ -26,10 +26,10 @@ cabal run alice-tms -- --help
 
 ```bash
 # From a JSON file
-cabal run alice-tms -- book shipment.json
+alice-tms book shipment.json
 
 # From stdin (pipe or interactive)
-echo '{ ... }' | cabal run alice-tms -- book
+echo '{ ... }' | alice-tms book
 ```
 
 The JSON body is a `BookShipmentRequest`. All fields are optional. Example:
@@ -74,7 +74,7 @@ The JSON body is a `BookShipmentRequest`. All fields are optional. Example:
 ### Check booking status
 
 ```bash
-cabal run alice-tms -- status -t <tracking-number-uuid>
+alice-tms status -t <tracking-number-uuid>
 ```
 
 Returns `status`, `startedProcessing`, `failed`, and `completed` timestamps.
@@ -82,7 +82,7 @@ Returns `status`, `startedProcessing`, `failed`, and `completed` timestamps.
 ### Get label URL
 
 ```bash
-cabal run alice-tms -- label -s <shipment-id-uuid>
+alice-tms label -s <shipment-id-uuid>
 ```
 
 Returns `labelUri` — a URL to download the shipping label.
@@ -90,7 +90,7 @@ Returns `labelUri` — a URL to download the shipping label.
 ### Get tracking events
 
 ```bash
-cabal run alice-tms -- events -s <shipment-id-uuid>
+alice-tms events -s <shipment-id-uuid>
 ```
 
 Returns `waybillNo`, `trackAndTrace` URL, and a list of `scans` with timestamps, scan types, barcodes, and GPS coordinates.
@@ -98,11 +98,11 @@ Returns `waybillNo`, `trackAndTrace` URL, and a list of `scans` with timestamps,
 ## Typical workflow
 
 1. **Build** a shipment JSON (write to a temp file or pipe directly)
-2. **Book** it: `cabal run alice-tms -- book shipment.json`
+2. **Book** it: `alice-tms book shipment.json`
 3. Note the `trackingNumber` and `shipmentId` from the response
-4. **Check status**: `cabal run alice-tms -- status -t <trackingNumber>`
-5. **Get label**: `cabal run alice-tms -- label -s <shipmentId>`
-6. **Track events**: `cabal run alice-tms -- events -s <shipmentId>`
+4. **Check status**: `alice-tms status -t <trackingNumber>`
+5. **Get label**: `alice-tms label -s <shipmentId>`
+6. **Track events**: `alice-tms events -s <shipmentId>`
 
 ## Global options
 
