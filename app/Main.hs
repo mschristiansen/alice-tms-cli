@@ -2,12 +2,13 @@ module Main where
 
 import AliceTMS.CLI (Command(..), Opts(..), runCLI)
 import AliceTMS.Client (bookShipment, bookShipmentV1, checkStatus, getEvents, getLabel, newManager)
-import AliceTMS.Types (Config(..), BookShipmentRequest(..), CommandColli(..))
+import AliceTMS.Types (Config(..))
+import AliceTMS.Validation (validateColliDimensions)
 
 import Configuration.Dotenv (defaultConfig, loadFile)
 import Control.Monad (void, when)
 import Data.Aeson (ToJSON, eitherDecode, encode)
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (fromMaybe)
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LBS8
 import qualified Data.Text as T
@@ -33,7 +34,7 @@ main = do
 
   baseUrl <- case optBaseUrl opts of
     Just url -> pure url
-    Nothing  -> maybe defaultBaseUrl id <$> lookupEnv "ALICE_TMS_BASE_URL"
+    Nothing  -> fromMaybe defaultBaseUrl <$> lookupEnv "ALICE_TMS_BASE_URL"
 
   let cfg = Config baseUrl key
   mgr <- newManager
@@ -44,7 +45,7 @@ main = do
       case eitherDecode raw of
         Left err  -> exitErr $ "Invalid JSON: " <> err
         Right req -> do
-          validateColliDimensions req
+          mapM_ (exitErr . ("Colli dimension out of range: " <>)) (validateColliDimensions req)
           bookShipment mgr cfg req >>= printResult
 
     BookV1 path -> do
@@ -52,7 +53,7 @@ main = do
       case eitherDecode raw of
         Left err  -> exitErr $ "Invalid JSON: " <> err
         Right req -> do
-          validateColliDimensions req
+          mapM_ (exitErr . ("Colli dimension out of range: " <>)) (validateColliDimensions req)
           bookShipmentV1 mgr cfg req >>= printResult
 
     Status tid -> checkStatus mgr cfg tid >>= printResult
@@ -67,27 +68,3 @@ exitErr :: String -> IO a
 exitErr msg = do
   hPutStrLn stderr $ "error: " <> msg
   exitFailure
-
--- | Max colli dimensions in meters (standard European trailer).
-maxLength, maxWidth, maxHeight :: Double
-maxLength = 14.0
-maxWidth  = 2.6
-maxHeight = 3.0
-
--- | Validate that all colli dimensions are within truck limits.
--- Dimensions are expected in meters.
-validateColliDimensions :: BookShipmentRequest -> IO ()
-validateColliDimensions req = do
-  let items = fromMaybe [] (collis req)
-      errors = concatMap checkColli (zip [1::Int ..] items)
-  mapM_ (exitErr . ("Colli dimension out of range: " <>)) errors
-  where
-    checkColli (i, c) = mapMaybe id
-      [ check i "length" maxLength =<< colliLength c
-      , check i "width"  maxWidth  =<< colliWidth c
-      , check i "height" maxHeight =<< colliHeight c
-      ]
-    check i dim maxVal val
-      | val < 0     = Just $ "colli #" <> show i <> " " <> dim <> " is negative (" <> show val <> "m)"
-      | val > maxVal = Just $ "colli #" <> show i <> " " <> dim <> " is " <> show val <> "m, max is " <> show maxVal <> "m"
-      | otherwise    = Nothing

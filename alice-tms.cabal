@@ -25,6 +25,7 @@ library
     AliceTMS.Types
     AliceTMS.Client
     AliceTMS.CLI
+    AliceTMS.Validation
   build-depends:
     , optparse-applicative >= 0.17
 

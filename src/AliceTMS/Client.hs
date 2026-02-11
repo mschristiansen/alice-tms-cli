@@ -11,7 +11,7 @@ module AliceTMS.Client
 
 import AliceTMS.Types
 
-import Data.Aeson (FromJSON, eitherDecode, encode)
+import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.Text.Encoding as TE
 import Data.Text (Text)
@@ -40,28 +40,26 @@ doRequest mgr req = do
     then pure $ eitherDecode (responseBody resp)
     else pure $ Left $ "HTTP " <> show sc <> ": " <> show (responseBody resp)
 
+mkPostRequest :: ToJSON body => Config -> String -> body -> IO Request
+mkPostRequest cfg urlPath body = do
+  initReq <- parseRequest (baseUrl cfg <> urlPath)
+  let params = [("apiKey", Just (TE.encodeUtf8 (apiKey cfg)))]
+  pure $ setQueryString params $ initReq
+    { method = "POST"
+    , requestBody = RequestBodyLBS (encode body)
+    , requestHeaders = [("Content-Type", "application/json")]
+    }
+
 -- | Book a shipment (V2).
 bookShipment :: Manager -> Config -> BookShipmentRequest -> IO (Either String BookShipmentResponse)
 bookShipment mgr cfg body = do
-  initReq <- parseRequest (baseUrl cfg <> "/bookings/v2/bookShipment")
-  let params = [("apiKey", Just (TE.encodeUtf8 (apiKey cfg)))]
-      req = setQueryString params $ initReq
-        { method = "POST"
-        , requestBody = RequestBodyLBS (encode body)
-        , requestHeaders = [("Content-Type", "application/json")]
-        }
+  req <- mkPostRequest cfg "/bookings/v2/bookShipment" body
   doRequest mgr req
 
 -- | Book a shipment (V1).
 bookShipmentV1 :: Manager -> Config -> BookShipmentRequest -> IO (Either String BookShipmentResponse)
 bookShipmentV1 mgr cfg body = do
-  initReq <- parseRequest (baseUrl cfg <> "/bookings/v1/bookShipment")
-  let params = [("apiKey", Just (TE.encodeUtf8 (apiKey cfg)))]
-      req = setQueryString params $ initReq
-        { method = "POST"
-        , requestBody = RequestBodyLBS (encode body)
-        , requestHeaders = [("Content-Type", "application/json")]
-        }
+  req <- mkPostRequest cfg "/bookings/v1/bookShipment" body
   doRequest mgr req
 
 -- | Check the processing status of a booking.

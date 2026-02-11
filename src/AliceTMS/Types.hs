@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module AliceTMS.Types
   ( Config(..)
@@ -162,7 +161,7 @@ instance ToJSON CheckStatusResponse where
 instance FromJSON CheckStatusResponse where
   parseJSON = genericParseJSON jsonOpts
 
-data GetLabelResponse = GetLabelResponse
+newtype GetLabelResponse = GetLabelResponse
   { labelUri :: Maybe Text
   } deriving (Show, Generic)
 
