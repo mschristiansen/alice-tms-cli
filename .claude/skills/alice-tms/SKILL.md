@@ -65,14 +65,15 @@ Both `book` (V2) and `book1` (V1) accept the same JSON body structure but differ
 - `name`, `street`, `zipCode`, `city`, `countryCode` — ISO 2-letter country code (e.g. `"DK"`, `"SE"`, `"DE"`)
 - `contactPerson`, `contactEmail`, `contactPhone`, `note`
 
-**Colli fields — V1** (`book1`): requires `type`, `description`, `barcodes` (at least 1), and `weight`.
-**Colli fields — V2** (`book`): requires only `weight`. All other colli fields are optional.
+**Colli fields** (both V1 and V2): only `weight` is required. All other colli fields are optional.
 
 **Colli optional fields:** `type`, `description`, `barcodes`, `height`, `length`, `width`, `volume`, `loadMeter`, `dangerousGoods`.
 
-**Colli `type`**: Free-text string — the API does not enforce an enum. Common values include `"package"` and `"pallet"`. Ask the user if unsure.
+**Colli `type`**: Free-text string — the API does not enforce an enum. Default to `"package"` unless the user specifies otherwise. Other common value: `"pallet"`.
 
 **Exchange pallets**: These represent pallet exchange counts between sender and carrier. Set all three to `0` unless the shipment involves physical pallet exchange (common in Scandinavian/European logistics where carriers swap empty pallets for loaded ones).
+
+**Date defaults**: If the user doesn't specify dates, default to `pickupDate` = today and `deliveryDate` = next business day. For Friday pickups, suggest Monday delivery. Always confirm the dates with the user before booking.
 
 The JSON body is a `BookShipmentRequest`. Example:
 
@@ -140,10 +141,15 @@ alice-tms events -s <shipment-id-uuid>
 
 Returns `waybillNo`, `trackAndTrace` URL, and a list of `scans` with timestamps, scan types, barcodes, and GPS coordinates.
 
+## Important
+
+**Always ask for final confirmation before executing a booking** (`book` or `book1`). Show the user a summary of the shipment (sender, recipient, dates, collis) and wait for explicit approval before running the command.
+
 ## Typical workflow
 
 1. **Build** a shipment JSON (write to a temp file or pipe directly)
-2. **Book** it: `alice-tms book shipment.json`
+2. **Confirm** — show a summary and get explicit user approval
+3. **Book** it: `alice-tms book shipment.json`
 3. Note the `trackingNumber` and `shipmentId` from the response
 4. **Check status**: `alice-tms status -t <trackingNumber>`
 5. **Get label**: `alice-tms label -s <shipmentId>`
