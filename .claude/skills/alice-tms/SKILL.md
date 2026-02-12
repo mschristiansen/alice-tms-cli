@@ -68,12 +68,15 @@ The JSON body is a `BookShipmentRequest`. Example:
     {
       "type": "package",
       "weight": 12.5,
-      "length": 60,
-      "width": 40,
-      "height": 30,
+      "length": 0.6,
+      "width": 0.4,
+      "height": 0.3,
       "barcodes": ["PKG001"]
     }
   ],
+  "fullExchangePallets": 0,
+  "halfExchangePallets": 0,
+  "quarterExchangePallets": 0,
   "ready": true
 }
 ```
@@ -116,6 +119,11 @@ Returns `waybillNo`, `trackAndTrace` URL, and a list of `scans` with timestamps,
 ## Global options
 
 - `--base-url URL` — override the API base URL (default: `https://api.alicetms.net`)
+
+## Units
+
+- **Dimensions** (length, width, height): **meters** — e.g. `0.6` for 60 cm. Client-side validation rejects dimensions exceeding European trailer limits (length 14m, width 2.6m, height 3m) or negative values.
+- **Weight**: kilograms
 
 ## Collis JSON field notes
 

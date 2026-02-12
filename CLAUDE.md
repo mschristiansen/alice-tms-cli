@@ -18,7 +18,7 @@ cabal run alice-tms -- --help
 
 Requires `ALICE_TMS_API_KEY` environment variable. Accepts `--base-url` to override the default (`https://api.alicetms.net`).
 
-Also reads `ALICE_TMS_BASE_URL` env var as a fallback when `--base-url` is not passed. A `.env` file in the working directory is auto-loaded if present.
+Also reads `ALICE_TMS_BASE_URL` env var as a fallback when `--base-url` is not passed. A `.env` file in the working directory is auto-loaded if present. **Important:** the base URL must be just the host (e.g. `https://api.alicetms.net`), not a full endpoint path — the CLI appends API paths automatically.
 
 ```bash
 alice-tms book shipment.json           # book from file (V2 endpoint)
@@ -69,6 +69,7 @@ src/AliceTMS/
 ## Gotchas
 
 - **Colli dimension validation**: `book`/`book1` reject colli with dimensions exceeding European trailer limits (length 14m, width 2.6m, height 3m) or negative values. This is a client-side check before the API call.
+- **Dimension units are meters**: all colli dimensions (length, width, height) are in meters, weights are in kilograms.
 
 ## Key Dependencies
 
