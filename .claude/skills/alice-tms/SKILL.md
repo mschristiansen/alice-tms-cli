@@ -39,7 +39,40 @@ alice-tms book1 shipment.json
 echo '{ ... }' | alice-tms book1
 ```
 
-Both `book` (V2) and `book1` (V1) accept the same JSON body. V1 has stricter required fields (collis, dates, addresses). V2 returns additional fields (labelData, wayBillNo, trackAndTrace) in the response.
+Both `book` (V2) and `book1` (V1) accept the same JSON body structure but differ in required fields and response. V2 returns additional fields (`labelData`, `wayBillNo`, `trackAndTrace`) in the response.
+
+### Required vs optional fields
+
+**Shipment-level required fields** (both V1 and V2):
+- `pickupDate` — date (YYYY-MM-DD)
+- `deliveryDate` — date (YYYY-MM-DD)
+- `senderAddress` — object (see address fields below)
+- `recipientAddress` — object (see address fields below)
+- `fullExchangePallets` — integer (use `0` if not applicable)
+- `halfExchangePallets` — integer (use `0` if not applicable)
+- `quarterExchangePallets` — integer (use `0` if not applicable)
+
+**Shipment-level optional fields:**
+- `reference1`, `reference2`, `reference3` — all optional text
+- `waybillNo` — optional text
+- `note` — optional text
+- `collis` — optional array (but you almost always want this)
+- `pickupTimeStart`, `pickupTimeEnd`, `deliveryTimeStart`, `deliveryTimeEnd` — optional time (HH:MM:SS)
+- `services` — optional array of text
+- `ready` — optional boolean
+
+**Address fields** (all optional in the Haskell type, but the API likely expects at least name/street/zip/city/country):
+- `name`, `street`, `zipCode`, `city`, `countryCode` — ISO 2-letter country code (e.g. `"DK"`, `"SE"`, `"DE"`)
+- `contactPerson`, `contactEmail`, `contactPhone`, `note`
+
+**Colli fields — V1** (`book1`): requires `type`, `description`, `barcodes` (at least 1), and `weight`.
+**Colli fields — V2** (`book`): requires only `weight`. All other colli fields are optional.
+
+**Colli optional fields:** `type`, `description`, `barcodes`, `height`, `length`, `width`, `volume`, `loadMeter`, `dangerousGoods`.
+
+**Colli `type`**: Free-text string — the API does not enforce an enum. Common values include `"package"` and `"pallet"`. Ask the user if unsure.
+
+**Exchange pallets**: These represent pallet exchange counts between sender and carrier. Set all three to `0` unless the shipment involves physical pallet exchange (common in Scandinavian/European logistics where carriers swap empty pallets for loaded ones).
 
 The JSON body is a `BookShipmentRequest`. Example:
 
