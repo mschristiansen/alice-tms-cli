@@ -108,6 +108,8 @@ bookExampleLines =
   , "    \"reference1\": \"ORDER-123\","
   , "    \"reference2\": \"ORDER-456\","
   , "    \"reference3\": null,"
+  , "    \"note\": \"Please call before delivery\","
+  , "    \"services\": [\"early delivery\", \"offloading by hand\"],"
   , "    \"senderAddress\": {"
   , "      \"name\": \"Warehouse A\","
   , "      \"street\": \"Industrivej 10\","
@@ -146,6 +148,9 @@ bookExampleLines =
   , "Required fields: pickupDate, deliveryDate, senderAddress, recipientAddress,"
   , "fullExchangePallets, halfExchangePallets, quarterExchangePallets."
   , "All other fields are optional (omit or set to null)."
+  , ""
+  , "note: free-text comment (bemærkning) for the shipment."
+  , "services: list of special service requests (e.g. early delivery, offloading by hand)."
   , ""
   , "Response includes shipmentId and trackingNumber for use with status/label/events."
   ]

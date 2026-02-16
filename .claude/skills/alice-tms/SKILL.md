@@ -55,10 +55,10 @@ Both `book` (V2) and `book1` (V1) accept the same JSON body structure but differ
 **Shipment-level optional fields:**
 - `reference1`, `reference2`, `reference3` — all optional text
 - `waybillNo` — optional text
-- `note` — optional text
+- `note` — optional text, free-text comment (bemærkning) for the shipment
 - `collis` — optional array (but you almost always want this)
 - `pickupTimeStart`, `pickupTimeEnd`, `deliveryTimeStart`, `deliveryTimeEnd` — optional time (HH:MM:SS)
-- `services` — optional array of text
+- `services` — optional array of text, special service requests (e.g. early delivery, offloading by hand)
 - `ready` — optional boolean
 
 **Address fields** (all optional in the Haskell type, but the API likely expects at least name/street/zip/city/country):
@@ -82,6 +82,8 @@ The JSON body is a `BookShipmentRequest`. Example:
   "pickupDate": "2025-06-15",
   "deliveryDate": "2025-06-16",
   "reference1": "ORDER-123",
+  "note": "Please call before delivery",
+  "services": ["early delivery", "offloading by hand"],
   "senderAddress": {
     "name": "Warehouse A",
     "street": "Industrivej 10",
