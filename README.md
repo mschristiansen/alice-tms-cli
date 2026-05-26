@@ -76,6 +76,30 @@ alice-tms book shipment.json
 
 The response includes `trackingNumber` and `shipmentId` for use with the other commands.
 
+### KHT service codes
+
+The optional `services` field on a shipment takes an array of KHT service codes.
+Free-text values are ignored by KHT — only the codes below are honored
+(confirmed by Mikal Weldum, mw@kht.dk, 2026-05-26):
+
+| Code  | Service                              |
+|-------|--------------------------------------|
+| XF10  | Delivery before 10:00                |
+| XF12  | Delivery before 12:00                |
+| X31   | Delivery with tail-lift truck        |
+| Z41   | May be left without signature        |
+| Z57   | Email notification of delivery       |
+
+Example:
+
+```json
+{
+  "services": ["XF10", "Z57"]
+}
+```
+
+Ask Mikal Weldum at KHT for additional codes if you need one not listed here.
+
 ### Workflow
 
 ```bash
